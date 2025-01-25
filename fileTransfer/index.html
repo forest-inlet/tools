@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>file transfer</title>
+    <link rel="icon" href="../amekutakao.ico"></link>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        p {
+            border: 1px solid black;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <p>URL: <a id="url"></a></p>
+    <input type="file" id="fileInput" multiple>
+    <button id="upload" disabled>アップロード</button>
+    <div id="files"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js"
+        import { getDatabase, ref as getRef, get, push, set, remove } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js"
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyABPSwHIJTA7DbZmzhf1bMfXiSk9Y6m0Lg",
+            authDomain: "forestinlet-strage.firebaseapp.com",
+            projectId: "forestinlet-strage",
+            databaseURL: "https://forestinlet-strage-default-rtdb.firebaseio.com/",
+            storageBucket: "forestinlet-strage.firebasestorage.app",
+            messagingSenderId: "15530901863",
+            appId: "1:15530901863:web:fd6b77b9f5e07cc697efc2"
+        }
+        const app = initializeApp(firebaseConfig)
+        const database = getDatabase(app)
+
+        let page
+
+        async function getPage() {
+            let search = window.location.search.substring(1)
+            let regex = /^[a-zA-Z0-9]{6,}$/
+            if (regex.test(search)) {
+                page = search
+            } else {
+                let pathExists
+                do {
+                    page = Math.floor(Math.random() * parseInt('zzzzzzzzzz', 36)).toString(36)
+                    pathExists = await get(getRef(database, `fileTransfer/${page}`)).then(snapshot => snapshot.exists())
+                } while (pathExists)
+            }
+            $('#url').text(`${window.location.origin}${window.location.pathname}?${page}`).on('click', () => navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${page}`))
+        }
+        getPage()
+
+        let files
+        
+        $('#fileInput').on('change', e => {
+            files = e.target.files
+            $('#upload').prop('disabled', false)
+        })
+
+        $('#upload').on('click', () => {
+            if (files.length) {
+                let promises = Array.from(files).map(file => {
+                    return new Promise(resolve => {
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                            set(push(getRef(database, `fileTransfer/${page}`)), {
+                                base64: reader.result.split(',')[1],
+                                type: file.type,
+                                name: file.name
+                            })
+                            resolve()
+                        }
+                        reader.readAsDataURL(file)
+                    })
+                })
+                Promise.all(promises).then(() => {
+                    getData()
+                    $('#fileInput').val('')
+                    $('#upload').prop('disabled', true)
+                })
+            }
+        })
+
+        async function getData() {
+            let data
+            await get(getRef(database, `fileTransfer/${page}`)).then(snapshot => {
+                if (snapshot.exists()) {
+                    data = snapshot.val()
+                } else {
+                    return
+                }
+            })
+            $('#files').empty()
+            for (let key in data) {
+                let hr = $('<hr></hr>')
+                let button = $(`<button data-base64="${data[key].base64}" data-type="${data[key].type}" data-name="${data[key].name}">ダウンロード</button>`)
+                let text = $(`<span>${data[key].name}</span>`)
+                let removeButton = $(`<button data-key="${key}">削除</button>`)
+                hr.append(button).append(text).append(removeButton).appendTo('#files')
+                button.on('click', function() {
+                    const binary = atob($(this).data('base64'))
+                    const array = new Uint8Array(binary.length)
+                    for (let i = 0; i < binary.length; i++) {
+                        array[i] = binary.charCodeAt(i)
+                    }
+                    const blob = new Blob([array], {type: $(this).data('type')})
+                    const link = document.createElement('a')
+                    link.href = URL.createObjectURL(blob)
+                    link.download = $(this).data('name') || 'restored_file'
+                    link.click()
+                })
+                removeButton.on('click', function() {
+                    remove(getRef(database, `fileTransfer/${page}/${$(this).data('key')}`))
+                    getData()
+                })
+            }
+        }
+        getData()
+    </script>
+</body>
+</html>
