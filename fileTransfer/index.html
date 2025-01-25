@@ -15,11 +15,17 @@
         p {
             border: 1px solid black;
         }
+
+        a#url {
+            color: blue;
+            cursor: pointer;
+            text-decoration: underline;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <p>URL: <a id="url"></a></p>
+    <p>URL: <a id="url"></a>(クリックしてコピー)</p>
     <input type="file" id="fileInput" multiple>
     <button id="upload" disabled>アップロード</button>
     <div id="files"></div>
