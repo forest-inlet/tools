@@ -7,7 +7,7 @@
     <style>
         * :not(hr) {
             margin: 10px;
-            padding: 0px;
+            padding: 0;
             text-align: center;
             overflow-wrap: anywhere;
         }
@@ -22,6 +22,32 @@
             text-decoration: underline;
         }
 
+        div.hr-with-text {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+        }
+        div.hr-with-text::before, div.hr-with-text::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid black;
+        }
+        div.hr-with-text::before {
+            margin-right: 10px;
+        }
+        div.hr-with-text::after {
+            margin-left: 10px;
+        }
+
+        div#dropArea {
+            border: 2px dashed black;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         #showAll {
             display: none;
         }
@@ -30,8 +56,16 @@
 </head>
 <body>
     <p id="thisPage">URL: <a id="url"></a>(クリックしてコピー)</p>
-    <input type="file" id="fileInput" multiple>
-    <button id="upload" disabled>アップロード</button>
+    <hr noshade="true">
+    <div id="input">
+        <input type="file" id="fileInput" multiple>
+        <div class="hr-with-text">または</div>
+        <div id="dropArea">ここにファイルをドロップ</div>
+        <div class="hr-with-text" id="beforeUpload">アップロード待ち</div>
+        <div id="beforeFiles">アップロード待ちのファイルはありません</div>
+        <button id="upload" disabled>アップロード</button>
+        <div id="error"></div>
+    </div>
     <div id="files"></div>
     <hr noshade="true">
     <p>履歴：</p>
@@ -56,6 +90,7 @@
 
         let page
         let showAll = false
+        let maxDataSize = 10 * 1024 * 1024
 
         async function getPage() {
             let search = window.location.search.substring(1)
@@ -83,12 +118,43 @@
         
         $('#fileInput').on('change', e => {
             files = e.target.files
+            let fileList = $('#beforeFiles')
+            fileList.empty()
+            Array.from(files).forEach(file => {
+                $('<div></div>').text(file.name).appendTo(fileList)
+            })
+            $('#upload').prop('disabled', false)
+        })
+
+        $('#dropArea').on('dragover', e => {
+            e.preventDefault()
+            e.stopPropagation()
+            $('#dropArea').css('background-color', '#f0f8ff')
+        }).on('dragleave', e => {
+            e.preventDefault()
+            e.stopPropagation()
+            $('#dropArea').css('background-color', '')
+        }).on('drop', e => {
+            e.preventDefault()
+            e.stopPropagation()
+            $('#dropArea').css('background-color', '')
+            files = e.originalEvent.dataTransfer.files
+            let fileList = $('#beforeFiles')
+            fileList.empty()
+            Array.from(files).forEach(file => {
+                $('<div></div>').text(file.name).appendTo(fileList)
+            })
             $('#upload').prop('disabled', false)
         })
 
         $('#upload').on('click', () => {
             if (files.length) {
+                let tooBigFiles = []
                 let promises = Array.from(files).map(file => {
+                    if (file.size > maxDataSize) {
+                        tooBigFiles.push(file.name)
+                        return Promise.resolve()
+                    }
                     return new Promise(resolve => {
                         const reader = new FileReader()
                         reader.onload = () => {
@@ -103,8 +169,15 @@
                     })
                 })
                 Promise.all(promises).then(() => {
+                    if (tooBigFiles.length) {
+                        $('#error').text(`ファイルサイズが大きすぎるためアップロードできませんでした(サイズ上限:10MB):\n${tooBigFiles.join('\n')}`)
+                    } else {
+                        $('#error').text('')
+                    }
                     getData()
                     $('#fileInput').val('')
+                    $('#beforeFiles').empty()
+                    $('#beforeFiles').text('アップロード待ちのファイルはありません')
                     $('#upload').prop('disabled', true)
                 })
             }
