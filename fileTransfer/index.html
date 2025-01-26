@@ -5,14 +5,14 @@
     <title>file transfer</title>
     <link rel="icon" href="../amekutakao.ico"></link>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
+        * :not(hr) {
+            margin: 10px;
+            padding: 0px;
             text-align: center;
             overflow-wrap: anywhere;
         }
 
-        p {
+        p#thisPage {
             border: 1px solid black;
         }
 
@@ -21,18 +21,26 @@
             cursor: pointer;
             text-decoration: underline;
         }
+
+        #showAll {
+            display: none;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <p>URL: <a id="url"></a>(クリックしてコピー)</p>
+    <p id="thisPage">URL: <a id="url"></a>(クリックしてコピー)</p>
     <input type="file" id="fileInput" multiple>
     <button id="upload" disabled>アップロード</button>
     <div id="files"></div>
+    <hr noshade="true">
+    <p>履歴：</p>
+    <div id="history"></div>
+    <button id="showAll">全て表示</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js"
-        import { getDatabase, ref as getRef, get, push, set, remove } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js"
+        import { getDatabase, ref as getRef, get, push, set, remove, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js"
 
         const firebaseConfig = {
             apiKey: "AIzaSyABPSwHIJTA7DbZmzhf1bMfXiSk9Y6m0Lg",
@@ -47,6 +55,7 @@
         const database = getDatabase(app)
 
         let page
+        let showAll = false
 
         async function getPage() {
             let search = window.location.search.substring(1)
@@ -59,8 +68,14 @@
                     page = Math.floor(Math.random() * parseInt('zzzzzzzzzz', 36)).toString(36)
                     pathExists = await get(getRef(database, `fileTransfer/${page}`)).then(snapshot => snapshot.exists())
                 } while (pathExists)
+                history.replaceState(null, '', `?${page}`)
             }
             $('#url').text(`${window.location.origin}${window.location.pathname}?${page}`).on('click', () => navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${page}`))
+            let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || {}
+            let thisPage = searchHistory[page] || 0
+            searchHistory[page] = thisPage + 1
+            localStorage.setItem('searchHistory', JSON.stringify(searchHistory))
+            getHistory(5)
         }
         getPage()
 
@@ -94,6 +109,52 @@
                 })
             }
         })
+
+        function getHistory(amount) {
+            let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || {}
+            let history = []
+            for (let key in searchHistory) {
+                history.push({ key: key, value: searchHistory[key] })
+            }
+            history.sort((a, b) => b.value - a.value)
+            $('#history').empty()
+            if (amount) {
+                showAll = false
+            } else {
+                showAll = true
+            }
+            amount = amount || history.length
+            if (history.length === 0) {
+                $('<span>履歴はありません</span>').appendTo('#history')
+                return
+            }
+            for (let i = 0; i < (amount); i++) {
+                if (history[i]) {
+                    let hr = $('<hr></hr>')
+                    let a = $(`<a href="?${history[i].key}">${history[i].key}</a>`)
+                    let removeButton = $(`<button data-key="${history[i].key}">削除</button>`)
+                    removeButton.on('click', function() {
+                        removeHistory($(this).data('key'))
+                    })
+                    hr.append(a).append(removeButton).appendTo('#history')
+                }
+            }
+            if (amount < history.length) {
+                $('#showAll').show().on('click', () => {
+                    getHistory()
+                    $('#showAll').hide()
+                })
+            } else {
+                $('#showAll').hide()
+            }
+        }
+
+        function removeHistory(key) {
+            let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || {}
+            delete searchHistory[key]
+            localStorage.setItem('searchHistory', JSON.stringify(searchHistory))
+            showAll ? getHistory() : getHistory(5)
+        }
 
         async function getData() {
             let data
@@ -129,7 +190,9 @@
                 })
             }
         }
-        getData()
+        
+        onChildAdded(getRef(database, `fileTransfer/${page}`), getData)
+        onChildRemoved(getRef(database, `fileTransfer/${page}`), getData)
     </script>
 </body>
 </html>
