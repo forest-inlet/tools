@@ -5,7 +5,7 @@
     <title>file transfer</title>
     <link rel="icon" href="../amekutakao.ico"></link>
     <style>
-        * :not(hr) {
+        * :not(hr) :not(#preview *) {
             margin: 10px;
             padding: 0;
             text-align: center;
@@ -51,8 +51,82 @@
         #showAll {
             display: none;
         }
+
+        #preview {
+            position: fixed;
+            margin: 0 !important;
+            padding: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        #preview > * {
+            display: inline-block;
+            margin: auto;
+            padding: 10px;
+            width: 90%;
+            max-height: 90%;
+            background-color: white;
+            text-align: left;
+            overflow: auto;
+        }
+        #preview > img, #preview > video, #preview > audio, #preview > pre {
+            width: auto;
+            max-width: 90%;
+        }
+        #preview > pre {
+            width: 90%;
+        }
+        #preview > pre > code {
+            text-align: left;
+        }
+        #preview .waku {
+            display: flex;
+            width: 90%;
+            height: 90%;
+        }
+        #preview iframe {
+            display: block;
+            flex: 1;
+            margin: 0 auto;
+            padding: 0;
+        }
+        #preview .waku button {
+            display: block;
+            position: fixed;
+            top: 5%;
+            right: calc(5% + 10px);
+            padding: 10px;
+            width: auto;
+            background-color: white;
+            border: 1px solid black;
+            cursor: pointer;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #ddd;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" integrity="sha512-EBLzUL8XLl+va/zAsmXwS7Z2B1F9HUHkZwyS/VKwh3S7T/U0nF4BaU29EP/ZSf6zgiIxYAnKLu6bJ8dqpmX5uw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-light.min.css" integrity="sha512-o5v54Kh5PH0dgnf9ei0L+vMRsbm5fvIvnR/XkrZZjN4mqdaeH7PW66tumBoQVIaKNVrLCZiBEfHzRY4JJSMK/Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <p id="thisPage">URL: <a id="url"></a>(クリックしてコピー)</p>
@@ -71,6 +145,8 @@
     <p>履歴：</p>
     <div id="history"></div>
     <button id="showAll">全て表示</button>
+
+    <div id="preview" style="display: none;"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js"
@@ -91,10 +167,11 @@
         let page
         let showAll = false
         let maxDataSize = 10 * 1024 * 1024
+        let files = []
 
         async function getPage() {
             let search = window.location.search.substring(1)
-            let regex = /^[a-zA-Z0-9]{6,}$/
+            let regex = /^[a-zA-Z0-9-_]{6,}$/
             if (regex.test(search)) {
                 page = search
             } else {
@@ -113,17 +190,11 @@
             getHistory(5)
         }
         getPage()
-
-        let files
         
         $('#fileInput').on('change', e => {
-            files = e.target.files
-            let fileList = $('#beforeFiles')
-            fileList.empty()
-            Array.from(files).forEach(file => {
-                $('<div></div>').text(file.name).appendTo(fileList)
-            })
-            $('#upload').prop('disabled', false)
+            let fromfiles = Array.from(e.target.files)
+            fromfiles.forEach(file => files.push(file))
+            showBeforeFiles()
         })
 
         $('#dropArea').on('dragover', e => {
@@ -138,19 +209,15 @@
             e.preventDefault()
             e.stopPropagation()
             $('#dropArea').css('background-color', '')
-            files = e.originalEvent.dataTransfer.files
-            let fileList = $('#beforeFiles')
-            fileList.empty()
-            Array.from(files).forEach(file => {
-                $('<div></div>').text(file.name).appendTo(fileList)
-            })
-            $('#upload').prop('disabled', false)
+            let fromfiles = Array.from(e.originalEvent.dataTransfer.files)
+            fromfiles.forEach(file => files.push(file))
+            showBeforeFiles()
         })
 
         $('#upload').on('click', () => {
             if (files.length) {
                 let tooBigFiles = []
-                let promises = Array.from(files).map(file => {
+                let promises = files.map(file => {
                     if (file.size > maxDataSize) {
                         tooBigFiles.push(file.name)
                         return Promise.resolve()
@@ -176,11 +243,16 @@
                     }
                     getData()
                     $('#fileInput').val('')
-                    $('#beforeFiles').empty()
-                    $('#beforeFiles').text('アップロード待ちのファイルはありません')
-                    $('#upload').prop('disabled', true)
+                    files = []
+                    showBeforeFiles()
                 })
             }
+        })
+        
+        $('#preview').on('click', function(e) {
+            if (e.target === this) {
+                $(this).hide()
+            }            
         })
 
         function getHistory(amount) {
@@ -229,6 +301,23 @@
             showAll ? getHistory() : getHistory(5)
         }
 
+        function showBeforeFiles() {
+            $('#beforeFiles').empty()
+            files.forEach(file => {
+                let div = $('<div></div>').text(file.name).appendTo('#beforeFiles')
+                $('<button>削除</button>').on('click', function() {
+                    files = files.filter(f => f !== file)
+                    showBeforeFiles()
+                }).appendTo(div)
+            })
+            if (files.length) {
+                $('#upload').prop('disabled', false)
+            } else {
+                $('#upload').prop('disabled', true)
+                $('#beforeFiles').text('アップロード待ちのファイルはありません')
+            }
+        }
+
         async function getData() {
             let data
             await get(getRef(database, `fileTransfer/${page}`)).then(snapshot => {
@@ -241,11 +330,7 @@
             $('#files').empty()
             for (let key in data) {
                 let hr = $('<hr></hr>')
-                let button = $(`<button data-base64="${data[key].base64}" data-type="${data[key].type}" data-name="${data[key].name}">ダウンロード</button>`)
-                let text = $(`<span>${data[key].name}</span>`)
-                let removeButton = $(`<button data-key="${key}">削除</button>`)
-                hr.append(button).append(text).append(removeButton).appendTo('#files')
-                button.on('click', function() {
+                let button = $(`<button data-base64="${data[key].base64}" data-type="${data[key].type}" data-name="${data[key].name}">ダウンロード</button>`).on('click', function() {
                     const binary = atob($(this).data('base64'))
                     const array = new Uint8Array(binary.length)
                     for (let i = 0; i < binary.length; i++) {
@@ -257,12 +342,87 @@
                     link.download = $(this).data('name') || 'restored_file'
                     link.click()
                 })
-                removeButton.on('click', function() {
+                let text = $(`<span data-base64="${data[key].base64}" data-type="${data[key].type || data[key].name.split('.').pop().toLowerCase()}">${data[key].name}</span>`).on('click', function() {
+                    let fileType = $(this).data('type')
+                    let base64 = $(this).data('base64')
+                    if (fileType.startsWith('image/')) {
+                        $('#preview').empty()
+                        $('<img class="previewFile">').attr('src', `data:${fileType};base64,${base64}`).appendTo('#preview')
+                        $('#preview').show()
+                    } else if (fileType.startsWith('video/')) {
+                        $('#preview').empty()
+                        $('<video class="previewFile" controls>').attr('src', `data:${fileType};base64,${base64}`).appendTo('#preview')
+                        $('#preview').show()
+                    } else if (fileType.startsWith('audio/')) {
+                        $('#preview').empty()
+                        $('<audio class="previewFile" controls>').attr('src', `data:${fileType};base64,${base64}`).appendTo('#preview')
+                        $('#preview').show()
+                    } else if (fileType === 'application/pdf') {
+                        $('#preview').empty()
+                        $('<embed class="previewFile">').attr('src', `data:${fileType};base64,${base64}`).appendTo('#preview')
+                        $('#preview').show()
+                    } else if (fileType === 'text/plain') {
+                        $('#preview').empty()
+                        $('<pre class="previewFile">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo('#preview')
+                        $('#preview').show()
+                    } else if (fileType === 'text/html') {
+                        $('#preview').empty()
+                        let waku = $('<div class="previewFile waku">').appendTo('#preview')
+                        let iframe = $('<iframe class="previewFile">').attr('srcdoc', new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)))))
+                        let pre = $('<pre class="previewFile">')
+                        $('<code class="lang-html">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        iframe.hide()
+                        let toggleButton = $('<button class="previewFile">プレビュー</button>').on('click', function() {
+                            if (pre.is(':visible')) {
+                                iframe.show()
+                                pre.hide()
+                                $(this).text('コード')
+                            } else {
+                                iframe.hide()
+                                pre.show()
+                                $(this).text('プレビュー')
+                            }
+                        })
+                        waku.append(toggleButton).append('<br>').append(iframe).append(pre)
+                        $('#preview').show()
+                    } else if (fileType === 'text/css') {
+                        $('#preview').empty()
+                        let pre = $('<pre class="previewFile">').appendTo('#preview')
+                        $('<code class="lang-css">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('#preview').show()
+                    } else if (fileType === 'less') {
+                        $('#preview').empty()
+                        let pre = $('<pre class="previewFile">').appendTo('#preview')
+                        $('<code class="lang-less">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('#preview').show()
+                    } else if (fileType === 'text/javascript') {
+                        $('#preview').empty()
+                        let pre = $('<pre class="previewFile">').appendTo('#preview')
+                        $('<code class="lang-javascript">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('#preview').show()
+                    } else {
+                        $('#preview').empty()
+                        $('<span class="previewFile">').text('このファイルのプレビューは表示できません').appendTo('#preview')
+                        $('#preview').show()
+                    }
+                    let codeblock = $('#preview code')[0]
+                    if (codeblock) {
+                        hljs.highlightElement(codeblock)
+                    }
+                })
+                let removeButton = $(`<button data-key="${key}">削除</button>`).on('click', function() {
                     remove(getRef(database, `fileTransfer/${page}/${$(this).data('key')}`))
                     getData()
                 })
+                hr.append(button).append(text).append(removeButton).appendTo('#files')
             }
         }
+
+        $(window).on('keydown', e => {
+            if (e.key === 'Escape') {
+                $('#preview').trigger('click')
+            }
+        })
         
         onChildAdded(getRef(database, `fileTransfer/${page}`), getData)
         onChildRemoved(getRef(database, `fileTransfer/${page}`), getData)
