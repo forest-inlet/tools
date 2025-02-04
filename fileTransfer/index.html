@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <title>file transfer</title>
-    <link rel="icon" href="../amekutakao.ico"></link>
+    <link rel="icon" href="../amekutakao.ico" />
     <style>
         * :not(hr) :not(#preview *) {
             margin: 10px;
@@ -86,6 +86,9 @@
         #preview > pre > code {
             text-align: left;
         }
+        #preview embed {
+            height: 90%;
+        }
         #preview .waku {
             display: flex;
             width: 90%;
@@ -107,6 +110,9 @@
             background-color: white;
             border: 1px solid black;
             cursor: pointer;
+        }
+        #preview embed, #preview iframe, #preview img, #preview video, #preview audio {
+            padding: 0;
         }
 
         ::-webkit-scrollbar {
