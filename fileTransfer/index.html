@@ -22,6 +22,11 @@
             text-decoration: underline;
         }
 
+        div#changePage, div#changePage * {
+            margin: 0;
+            padding: 0;
+        }
+
         div.hr-with-text {
             display: flex;
             align-items: center;
@@ -135,7 +140,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-light.min.css" integrity="sha512-o5v54Kh5PH0dgnf9ei0L+vMRsbm5fvIvnR/XkrZZjN4mqdaeH7PW66tumBoQVIaKNVrLCZiBEfHzRY4JJSMK/Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <p id="thisPage">URL: <a id="url"></a>(クリックしてコピー)</p>
+    <p id="thisPage">URL: <a id="url"></a>(クリックしてコピー)</p><br>
+    <div id="changePage">
+        <input id="newPage" type="text" placeholder="新しいURL"><button id="changePageButton">変更</button><br>
+        <p id="newPageError"></p>
+    </div>
     <hr noshade="true">
     <div id="input">
         <input type="file" id="fileInput" multiple>
@@ -196,6 +205,16 @@
             getHistory(5)
         }
         getPage()
+
+        $('#changePageButton').on('click', () => {
+            let newPage = $('#newPage').val()
+            let regex = /^[a-zA-Z0-9-_]{6,}$/
+            if (regex.test(newPage)) {
+                window.location.search = newPage
+            } else {
+                $('#newPageError').text('6文字以上の半角英数字とハイフン、アンダースコアのみ使用できます')
+            }
+        })
         
         $('#fileInput').on('change', e => {
             let fromfiles = Array.from(e.target.files)
