@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <title>font changer</title>
+    <link rel="icon" href="../amekutakao.ico" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>リクエスト</h1>
+    フォント名：<input type="text" id="fontName"><br>
+    URL(任意)：<input type="url" id="url"><br>
+    <button id="send">送信</button>
+
+    <script type="module">
+        import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js'
+        import {getDatabase, ref as getRef, set, push} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js'
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyABPSwHIJTA7DbZmzhf1bMfXiSk9Y6m0Lg",
+            authDomain: "forestinlet-strage.firebaseapp.com",
+            projectId: "forestinlet-strage",
+            databaseURL: "https://forestinlet-strage-default-rtdb.firebaseio.com/",
+            storageBucket: "forestinlet-strage.firebasestorage.app",
+            messagingSenderId: "15530901863",
+            appId: "1:15530901863:web:fd6b77b9f5e07cc697efc2"
+        }
+        const app = initializeApp(firebaseConfig)
+        const database = getDatabase(app)
+
+        $('#send').on('click', () => {
+            $('.error').remove()
+
+            let font = $('#fontName').val()
+            let url = $('#url').val()
+            if (font) {
+                set(push(getRef(database, 'fontChanger')), {
+                    fontName: font,
+                    url: url
+                })
+                $('#fontName').val('')
+                $('#url').val('')
+            } else {
+                let error = $('<p class="error"></p>').text('入力してください')
+                $('#fontName').after(error)
+            }
+        })
+    </script>
+</body>
+</html>
