@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <title>font changer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        button {
+            background-color: lightblue;
+            border-radius: 5px;
+        }
+
+        div.download {
+            border: 1px solid black;
+            border-radius: 5px;
+            margin: 5px;
+        }
+
+        div.hr-with-text {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+        }
+        div.hr-with-text::before, div.hr-with-text::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid black;
+        }
+        div.hr-with-text::before {
+            margin-right: 10px;
+        }
+        div.hr-with-text::after {
+            margin-left: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="download"><a href="font-changer-v1.0.zip" download><button>最新バージョン(v1.0)をダウンロード</button></a><br>
+    作成　フォント：<br><span>cube12<br>
+    comic sans<br>
+    DS-Digital<br>
+    Aamonoline<br>
+    Papyrus<br>
+    叛逆明朝<br>
+    851マカポップ<br>
+    たぬき油性マジック<br>
+    玉ねぎ楷書<br>
+    玉ねぎ楷書「激」</span></div>
+    <div class="hr-with-text">過去バージョン</div>
+    none
+</body>
+</html>
