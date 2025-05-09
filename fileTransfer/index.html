@@ -184,6 +184,8 @@
         let maxDataSize = 10 * 1024 * 1024
         let files = []
 
+        let previewIndex = 0
+
         async function getPage() {
             let search = window.location.search.substring(1)
             let regex = /^[a-zA-Z0-9-_]{6,}$/
@@ -376,7 +378,7 @@
                         $('#preview').show()
                     } else if (fileType.startsWith('video/')) {
                         $('#preview').empty()
-                        $('<video class="previewFile" controls>').attr('src', `data:${fileType};base64,${base64}`).appendTo('#preview')
+                        $('<video class="previewFile" controls>').attr('src', `data:video/mp4;base64,${base64}`).appendTo('#preview')
                         $('#preview').show()
                     } else if (fileType.startsWith('audio/')) {
                         $('#preview').empty()
@@ -425,9 +427,31 @@
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
                         $('<code class="lang-javascript">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
+                    } else if (fileType === 'java') {
+                        $('#preview').empty()
+                        let pre = $('<pre class="previewFile">').appendTo('#preview')
+                        $('<code class="lang-java">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('#preview').show()
+                    } else if (fileType === 'application/json') {
+                        $('#preview').empty()
+                        let pre = $('<pre class="previewFile">').appendTo('#preview')
+                        $('<code class="lang-json">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('#preview').show()
+                    } else if (fileType === 'text/xml' || fileType === 'application/xml') {
+                        $('#preview').empty()
+                        let pre = $('<pre class="previewFile">').appendTo('#preview')
+                        $('<code class="lang-xml">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('#preview').show()
                     } else {
                         $('#preview').empty()
-                        $('<span class="previewFile">').text('このファイルのプレビューは表示できません').appendTo('#preview')
+                        let span = $('<span class="previewFile" style="text-align: center;">').text('このファイルのプレビューは対応していません').appendTo('#preview')
+                        span.append('<br>')
+                        let button = $('<button class="previewFile">テキストで表示</button>').on('click', function() {
+                            $('#preview').empty()
+                            let pre = $('<pre class="previewFile">').appendTo('#preview')
+                            $('<code class="lang-text">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        })
+                        button.appendTo(span)
                         $('#preview').show()
                     }
                     let codeblock = $('#preview code')[0]
