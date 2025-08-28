@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>校買メモ</title>
+    <link rel="icon" href="../amekutakao.ico">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+        }
+
+        tr {
+            width: 90vw;
+        }
+
+        th, td {
+            width: 30vw;
+            text-align: right;
+        }
+        th {
+            text-align: center !important;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <table border="1" cellspacing="0" id="dataTable">
+        <tr><th>日付</th><th>もの</th><th>値段</th></tr>
+    </table>
+    <br>
+    <hr>
+    <br>
+    <input type="text" id="item" placeholder="もの">
+    <input type="text" id="price" placeholder="値段"><br>
+    <button id="addData">追加</button>
+    
+    <script>
+        const table = $('#dataTable')
+        const itemInput = $('#item')
+        const priceInput = $('#price')
+        const addDataButton = $('#addData')
+        let data = JSON.parse(localStorage.getItem('kobaiData') || '[]')
+        let numberCheck = /^[0-9]+$/
+
+        function getDate() {
+            const today = new Date()
+            const year = today.getFullYear()
+            const month = String(today.getMonth() + 1).padStart(2, '0')
+            const day = String(today.getDate()).padStart(2, '0')
+
+            return `${year}/${month}/${day}`
+        }
+        
+        data.forEach(entry => {
+            const row = `<tr><td>${entry.date}</td><td>${entry.item}</td><td>${entry.price}</td></tr>`
+            table.append(row)
+        })
+
+        addDataButton.on('click', () => {
+            const date = getDate()
+            const item = itemInput.val()
+            const price = priceInput.val()
+            if (!numberCheck.test(price)) {
+                alert('値段は数字で入力してください。')
+                return
+            }
+            if (date && item && price) {
+                const newRow = `<tr><td>${date}</td><td>${item}</td><td>${price}</td></tr>`
+                data.push({ date, item, price })
+                localStorage.setItem('kobaiData', JSON.stringify(data))
+                table.append(newRow)
+                itemInput.val('')
+                priceInput.val('')
+            } else {
+                alert('すべてのフィールドを入力してください。')
+            }
+        })
+    </script>
+</body>
+</html>
