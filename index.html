@@ -1,33 +1,54 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>TOOLS</title>
   <link rel="icon" href="amekutakao.ico">
   <style>
+    div#title {
+      text-align: center;
+    }
 
-    a.hidelink{
-      text-decoration :none;
-      color :black !important;
-      font-size: 36px;
+    h1 {
+      font-size: 36px
     }
-    div#title{
-      text-align :center;
-    }
-    h1{
-      font-size :36px
-    }
-    a{
-      font-size :18px;
-      color :#0000ff
+
+    a {
+      font-size: 18px;
+      color: #0000ff
     }
   </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
+
 <body>
   <div id="title">
-    <h1>ちょっと便利な<a href="kobaimemo" class="hidelink">ツ</a>ール集</h1>
+    <h1>ちょっと便利なツール集</h1>
+    <p><span class="hidelink clicknext" data-order="1">ここ</span>にサイト<span class="hidelink" data-order="3">は</span>あまりありませんが、私の<span class="hidelink" data-order="2">脳</span><span class="hidelink" data-order="4">内</span>にはたくさんあります</p>
   </div>
   <hr>
   <li><a href="fileTransfer">ファイルを転送</a></li>
   <li><a href="extensions/font-changer/downloader.html">font changer</a></li>
+
+  <script>
+    $(document).on('click', function() {
+      console.log('click out side!')
+      $('.clicknext').removeClass('clicknext')
+      $('.hidelink[data-order="1"]').addClass('clicknext')
+    })
+
+    $(document).on('click', '.clicknext', function(e) {
+      e.stopPropagation()
+      let order = parseInt($(this).data('order'))
+      console.log(`clicked ${order}`)
+      if (order === 4) {
+        location.href = 'kobaimemo'
+        return
+      }
+      $(this).removeClass('clicknext')
+      $(`[data-order="${order + 1}"]`).addClass('clicknext')
+    })
+  </script>
 </body>
+
 </html>
