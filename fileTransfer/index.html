@@ -442,6 +442,11 @@
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
                         $('<code class="lang-xml">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
+                    } else if (fileType === 'dart') {
+                        $('#preview').empty()
+                        let pre = $('<pre class="previewFile">').appendTo('#preview')
+                        $('<code class="langage-dart">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('#preview').show()
                     } else {
                         $('#preview').empty()
                         let span = $('<span class="previewFile" style="text-align: center;">').text('このファイルのプレビューは対応していません').appendTo('#preview')
