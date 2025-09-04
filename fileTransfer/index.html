@@ -397,7 +397,7 @@
                         let waku = $('<div class="previewFile waku">').appendTo('#preview')
                         let iframe = $('<iframe class="previewFile">').attr('srcdoc', new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)))))
                         let pre = $('<pre class="previewFile">')
-                        $('<code class="lang-html">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('<code class="langage-html">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         iframe.hide()
                         let toggleButton = $('<button class="previewFile">プレビュー</button>').on('click', function() {
                             if (pre.is(':visible')) {
@@ -415,37 +415,42 @@
                     } else if (fileType === 'text/css') {
                         $('#preview').empty()
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="lang-css">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('<code class="langage-css">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
                     } else if (fileType === 'less') {
                         $('#preview').empty()
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="lang-less">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('<code class="langage-less">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
                     } else if (fileType === 'text/javascript') {
                         $('#preview').empty()
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="lang-javascript">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('<code class="langage-javascript">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
                     } else if (fileType === 'java') {
                         $('#preview').empty()
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="lang-java">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('<code class="langage-java">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
                     } else if (fileType === 'application/json') {
                         $('#preview').empty()
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="lang-json">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('<code class="langage-json">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
                     } else if (fileType === 'text/xml' || fileType === 'application/xml') {
                         $('#preview').empty()
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="lang-xml">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('<code class="langage-xml">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
                     } else if (fileType === 'dart') {
                         $('#preview').empty()
                         let pre = $('<pre class="previewFile">').appendTo('#preview')
                         $('<code class="langage-dart">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                        $('#preview').show()
+                    } else if (fileType === 'text/x-java') {
+                        $('#preview').empty()
+                        let pre = $('<pre class="previewFile">').appendTo('#preview')
+                        $('<code class="langage-java">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         $('#preview').show()
                     } else {
                         $('#preview').empty()
@@ -454,7 +459,7 @@
                         let button = $('<button class="previewFile">テキストで表示</button>').on('click', function() {
                             $('#preview').empty()
                             let pre = $('<pre class="previewFile">').appendTo('#preview')
-                            $('<code class="lang-text">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
+                            $('<code class="langage-text">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
                         })
                         button.appendTo(span)
                         $('#preview').show()
