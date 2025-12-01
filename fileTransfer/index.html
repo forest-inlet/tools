@@ -1,491 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>file transfer</title>
     <link rel="icon" href="../amekutakao.ico" />
-    <style>
-        * :not(hr) :not(#preview *) {
-            margin: 10px;
-            padding: 0;
-            text-align: center;
-            overflow-wrap: anywhere;
-        }
-
-        p#thisPage {
-            border: 1px solid black;
-        }
-
-        a#url {
-            color: blue;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        div#changePage, div#changePage * {
-            margin: 0;
-            padding: 0;
-        }
-
-        div.hr-with-text {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0;
-        }
-        div.hr-with-text::before, div.hr-with-text::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid black;
-        }
-        div.hr-with-text::before {
-            margin-right: 10px;
-        }
-        div.hr-with-text::after {
-            margin-left: 10px;
-        }
-
-        div#dropArea {
-            border: 2px dashed black;
-            height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #showAll {
-            display: none;
-        }
-
-        #preview {
-            position: fixed;
-            margin: 0 !important;
-            padding: 0;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-        }
-        #preview > * {
-            display: inline-block;
-            margin: auto;
-            padding: 10px;
-            width: 90%;
-            max-height: 90%;
-            background-color: white;
-            text-align: left;
-            overflow: auto;
-        }
-        #preview > img, #preview > video, #preview > audio, #preview > pre {
-            width: auto;
-            max-width: 90%;
-        }
-        #preview > pre {
-            width: 90%;
-        }
-        #preview > pre > code {
-            text-align: left;
-        }
-        #preview embed {
-            height: 90%;
-        }
-        #preview .waku {
-            display: flex;
-            width: 90%;
-            height: 90%;
-        }
-        #preview iframe {
-            display: block;
-            flex: 1;
-            margin: 0 auto;
-            padding: 0;
-        }
-        #preview .waku button {
-            display: block;
-            position: fixed;
-            top: 5%;
-            right: calc(5% + 10px);
-            padding: 10px;
-            width: auto;
-            background-color: white;
-            border: 1px solid black;
-            cursor: pointer;
-        }
-        #preview embed, #preview iframe, #preview img, #preview video, #preview audio {
-            padding: 0;
-        }
-
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        ::-webkit-scrollbar-track {
-            background-color: #ddd;
-        }
-        ::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border-radius: 5px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: #555;
-        }
-    </style>
+    <link rel="stylesheet" href="./styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" integrity="sha512-EBLzUL8XLl+va/zAsmXwS7Z2B1F9HUHkZwyS/VKwh3S7T/U0nF4BaU29EP/ZSf6zgiIxYAnKLu6bJ8dqpmX5uw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-light.min.css" integrity="sha512-o5v54Kh5PH0dgnf9ei0L+vMRsbm5fvIvnR/XkrZZjN4mqdaeH7PW66tumBoQVIaKNVrLCZiBEfHzRY4JJSMK/Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <p id="thisPage">URL: <a id="url"></a>(クリックしてコピー)</p><br>
+    <p id="thisPage">URL: <a id="url"></a> (クリックしてコピー)</p><br>
     <div id="changePage">
-        <input id="newPage" type="text" placeholder="新しいURL"><button id="changePageButton">変更</button><br>
+        <input id="newPageInput" type="text" placeholder="新しいURL"><button id="changePageButton">変更</button><br>
         <p id="newPageError"></p>
     </div>
     <hr noshade="true">
-    <div id="input">
+    <div id="inputArea">
         <input type="file" id="fileInput" multiple>
         <div class="hr-with-text">または</div>
         <div id="dropArea">ここにファイルをドロップ</div>
         <div class="hr-with-text" id="beforeUpload">アップロード待ち</div>
         <div id="beforeFiles">アップロード待ちのファイルはありません</div>
-        <button id="upload" disabled>アップロード</button>
-        <div id="error"></div>
+        <button id="uploadButton">アップロード</button>
+        <div id="uploadError"></div>
     </div>
-    <div id="files"></div>
     <hr noshade="true">
-    <p>履歴：</p>
-    <div id="history"></div>
-    <button id="showAll">全て表示</button>
+    <div id="files">
+        <img id="loadingIndicator" src="../loading.gif" alt="Loading...">
+    </div>
+    <hr noshade="true">
+    <div id="previewOverlay">
+            <div id="previewArea">
+            <button id="closePreviewButton">X</button>
+            <div id="previewContent"></div>
+            <div id="previewFileName"></div>
+            <button id="prevPreviewButton">＜</button>
+            <button id="nextPreviewButton">＞</button>
+        </div>
+    </div>
 
-    <div id="preview" style="display: none;"></div>
+    <div id="pageHistory">
+        <h3>ページ履歴</h3>
+        <div id="historyList"></div>
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js"
-        import { getDatabase, ref as getRef, get, push, set, remove, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js"
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyABPSwHIJTA7DbZmzhf1bMfXiSk9Y6m0Lg",
-            authDomain: "forestinlet-strage.firebaseapp.com",
-            projectId: "forestinlet-strage",
-            databaseURL: "https://forestinlet-strage-default-rtdb.firebaseio.com/",
-            storageBucket: "forestinlet-strage.firebasestorage.app",
-            messagingSenderId: "15530901863",
-            appId: "1:15530901863:web:fd6b77b9f5e07cc697efc2"
-        }
-        const app = initializeApp(firebaseConfig)
-        const database = getDatabase(app)
-
-        let page
-        let showAll = false
-        let maxDataSize = 10 * 1024 * 1024
-        let files = []
-
-        let previewIndex = 0
-
-        async function getPage() {
-            let search = window.location.search.substring(1)
-            let regex = /^[a-zA-Z0-9-_]{6,}$/
-            if (regex.test(search)) {
-                page = search
-            } else {
-                let pathExists
-                do {
-                    page = Math.floor(Math.random() * parseInt('zzzzzzzzzz', 36)).toString(36)
-                    pathExists = await get(getRef(database, `fileTransfer/${page}`)).then(snapshot => snapshot.exists())
-                } while (pathExists)
-                history.replaceState(null, '', `?${page}`)
-            }
-            $('#url').text(`${window.location.origin}${window.location.pathname}?${page}`).on('click', () => navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${page}`))
-            let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || {}
-            let thisPage = searchHistory[page] || 0
-            searchHistory[page] = thisPage + 1
-            localStorage.setItem('searchHistory', JSON.stringify(searchHistory))
-            getHistory(5)
-        }
-        getPage()
-
-        $('#changePageButton').on('click', () => {
-            let newPage = $('#newPage').val()
-            let regex = /^[a-zA-Z0-9-_]{6,}$/
-            if (regex.test(newPage)) {
-                window.location.search = newPage
-            } else {
-                $('#newPageError').text('6文字以上の半角英数字とハイフン、アンダースコアのみ使用できます')
-            }
-        })
-        
-        $('#fileInput').on('change', e => {
-            let fromfiles = Array.from(e.target.files)
-            fromfiles.forEach(file => files.push(file))
-            showBeforeFiles()
-        })
-
-        $('#dropArea').on('dragover', e => {
-            e.preventDefault()
-            e.stopPropagation()
-            $('#dropArea').css('background-color', '#f0f8ff')
-        }).on('dragleave', e => {
-            e.preventDefault()
-            e.stopPropagation()
-            $('#dropArea').css('background-color', '')
-        }).on('drop', e => {
-            e.preventDefault()
-            e.stopPropagation()
-            $('#dropArea').css('background-color', '')
-            let fromfiles = Array.from(e.originalEvent.dataTransfer.files)
-            fromfiles.forEach(file => files.push(file))
-            showBeforeFiles()
-        })
-
-        $('#upload').on('click', () => {
-            if (files.length) {
-                let tooBigFiles = []
-                let promises = files.map(file => {
-                    if (file.size > maxDataSize) {
-                        tooBigFiles.push(file.name)
-                        return Promise.resolve()
-                    }
-                    return new Promise(resolve => {
-                        const reader = new FileReader()
-                        reader.onload = () => {
-                            set(push(getRef(database, `fileTransfer/${page}`)), {
-                                base64: reader.result.split(',')[1],
-                                type: file.type,
-                                name: file.name
-                            })
-                            resolve()
-                        }
-                        reader.readAsDataURL(file)
-                    })
-                })
-                Promise.all(promises).then(() => {
-                    if (tooBigFiles.length) {
-                        $('#error').text(`ファイルサイズが大きすぎるためアップロードできませんでした(サイズ上限:10MB):\n${tooBigFiles.join('\n')}`)
-                    } else {
-                        $('#error').text('')
-                    }
-                    getData()
-                    $('#fileInput').val('')
-                    files = []
-                    showBeforeFiles()
-                })
-            }
-        })
-        
-        $('#preview').on('click', function(e) {
-            if (e.target === this) {
-                $(this).hide()
-            }            
-        })
-
-        function getHistory(amount) {
-            let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || {}
-            let history = []
-            for (let key in searchHistory) {
-                history.push({ key: key, value: searchHistory[key] })
-            }
-            history.sort((a, b) => b.value - a.value)
-            $('#history').empty()
-            if (amount) {
-                showAll = false
-            } else {
-                showAll = true
-            }
-            amount = amount || history.length
-            if (history.length === 0) {
-                $('<span>履歴はありません</span>').appendTo('#history')
-                return
-            }
-            for (let i = 0; i < (amount); i++) {
-                if (history[i]) {
-                    let hr = $('<hr></hr>')
-                    let a = $(`<a href="?${history[i].key}">${history[i].key}</a>`)
-                    let removeButton = $(`<button data-key="${history[i].key}">削除</button>`)
-                    removeButton.on('click', function() {
-                        removeHistory($(this).data('key'))
-                    })
-                    hr.append(a).append(removeButton).appendTo('#history')
-                }
-            }
-            if (amount < history.length) {
-                $('#showAll').show().on('click', () => {
-                    getHistory()
-                    $('#showAll').hide()
-                })
-            } else {
-                $('#showAll').hide()
-            }
-        }
-
-        function removeHistory(key) {
-            let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || {}
-            delete searchHistory[key]
-            localStorage.setItem('searchHistory', JSON.stringify(searchHistory))
-            showAll ? getHistory() : getHistory(5)
-        }
-
-        function showBeforeFiles() {
-            $('#beforeFiles').empty()
-            files.forEach(file => {
-                let div = $('<div></div>').text(file.name).appendTo('#beforeFiles')
-                $('<button>削除</button>').on('click', function() {
-                    files = files.filter(f => f !== file)
-                    showBeforeFiles()
-                }).appendTo(div)
-            })
-            if (files.length) {
-                $('#upload').prop('disabled', false)
-            } else {
-                $('#upload').prop('disabled', true)
-                $('#beforeFiles').text('アップロード待ちのファイルはありません')
-            }
-        }
-
-        async function getData() {
-            let data
-            await get(getRef(database, `fileTransfer/${page}`)).then(snapshot => {
-                if (snapshot.exists()) {
-                    data = snapshot.val()
-                } else {
-                    return
-                }
-            })
-            $('#files').empty()
-            for (let key in data) {
-                let hr = $('<hr></hr>')
-                let button = $(`<button data-base64="${data[key].base64}" data-type="${data[key].type}" data-name="${data[key].name}">ダウンロード</button>`).on('click', function() {
-                    const binary = atob($(this).data('base64'))
-                    const array = new Uint8Array(binary.length)
-                    for (let i = 0; i < binary.length; i++) {
-                        array[i] = binary.charCodeAt(i)
-                    }
-                    const blob = new Blob([array], {type: $(this).data('type')})
-                    const link = document.createElement('a')
-                    link.href = URL.createObjectURL(blob)
-                    link.download = $(this).data('name') || 'restored_file'
-                    link.click()
-                })
-                let text = $(`<span data-base64="${data[key].base64}" data-type="${data[key].type || data[key].name.split('.').pop().toLowerCase()}">${data[key].name}</span>`).on('click', function() {
-                    let fileType = $(this).data('type')
-                    let base64 = $(this).data('base64')
-                    if (fileType.startsWith('image/')) {
-                        $('#preview').empty()
-                        $('<img class="previewFile">').attr('src', `data:${fileType};base64,${base64}`).appendTo('#preview')
-                        $('#preview').show()
-                    } else if (fileType.startsWith('video/')) {
-                        $('#preview').empty()
-                        $('<video class="previewFile" controls>').attr('src', `data:video/mp4;base64,${base64}`).appendTo('#preview')
-                        $('#preview').show()
-                    } else if (fileType.startsWith('audio/')) {
-                        $('#preview').empty()
-                        $('<audio class="previewFile" controls>').attr('src', `data:${fileType};base64,${base64}`).appendTo('#preview')
-                        $('#preview').show()
-                    } else if (fileType === 'application/pdf') {
-                        $('#preview').empty()
-                        $('<embed class="previewFile">').attr('src', `data:${fileType};base64,${base64}`).appendTo('#preview')
-                        $('#preview').show()
-                    } else if (fileType === 'text/plain') {
-                        $('#preview').empty()
-                        $('<pre class="previewFile">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo('#preview')
-                        $('#preview').show()
-                    } else if (fileType === 'text/html') {
-                        $('#preview').empty()
-                        let waku = $('<div class="previewFile waku">').appendTo('#preview')
-                        let iframe = $('<iframe class="previewFile">').attr('srcdoc', new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)))))
-                        let pre = $('<pre class="previewFile">')
-                        $('<code class="langage-html">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        iframe.hide()
-                        let toggleButton = $('<button class="previewFile">プレビュー</button>').on('click', function() {
-                            if (pre.is(':visible')) {
-                                iframe.show()
-                                pre.hide()
-                                $(this).text('コード')
-                            } else {
-                                iframe.hide()
-                                pre.show()
-                                $(this).text('プレビュー')
-                            }
-                        })
-                        waku.append(toggleButton).append('<br>').append(iframe).append(pre)
-                        $('#preview').show()
-                    } else if (fileType === 'text/css') {
-                        $('#preview').empty()
-                        let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="langage-css">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        $('#preview').show()
-                    } else if (fileType === 'less') {
-                        $('#preview').empty()
-                        let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="langage-less">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        $('#preview').show()
-                    } else if (fileType === 'text/javascript') {
-                        $('#preview').empty()
-                        let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="langage-javascript">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        $('#preview').show()
-                    } else if (fileType === 'java') {
-                        $('#preview').empty()
-                        let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="langage-java">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        $('#preview').show()
-                    } else if (fileType === 'application/json') {
-                        $('#preview').empty()
-                        let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="langage-json">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        $('#preview').show()
-                    } else if (fileType === 'text/xml' || fileType === 'application/xml') {
-                        $('#preview').empty()
-                        let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="langage-xml">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        $('#preview').show()
-                    } else if (fileType === 'dart') {
-                        $('#preview').empty()
-                        let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="langage-dart">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        $('#preview').show()
-                    } else if (fileType === 'text/x-java') {
-                        $('#preview').empty()
-                        let pre = $('<pre class="previewFile">').appendTo('#preview')
-                        $('<code class="langage-java">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        $('#preview').show()
-                    } else {
-                        $('#preview').empty()
-                        let span = $('<span class="previewFile" style="text-align: center;">').text('このファイルのプレビューは対応していません').appendTo('#preview')
-                        span.append('<br>')
-                        let button = $('<button class="previewFile">テキストで表示</button>').on('click', function() {
-                            $('#preview').empty()
-                            let pre = $('<pre class="previewFile">').appendTo('#preview')
-                            $('<code class="langage-text">').text(new TextDecoder('utf-8').decode(new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0))))).appendTo(pre)
-                        })
-                        button.appendTo(span)
-                        $('#preview').show()
-                    }
-                    let codeblock = $('#preview code')[0]
-                    if (codeblock) {
-                        hljs.highlightElement(codeblock)
-                    }
-                })
-                let removeButton = $(`<button data-key="${key}">削除</button>`).on('click', function() {
-                    remove(getRef(database, `fileTransfer/${page}/${$(this).data('key')}`))
-                    getData()
-                })
-                hr.append(button).append(text).append(removeButton).appendTo('#files')
-            }
-        }
-
-        $(window).on('keydown', e => {
-            if (e.key === 'Escape') {
-                $('#preview').trigger('click')
-            }
-        })
-        
-        onChildAdded(getRef(database, `fileTransfer/${page}`), getData)
-        onChildRemoved(getRef(database, `fileTransfer/${page}`), getData)
-    </script>
+    <script src="./script.js" type="module"></script>
 </body>
 </html>
