@@ -12,7 +12,7 @@ body {
 
 #people-select {
     display: grid;
-    grid-template-columns: repeat(2, 90px);
+    grid-template-columns: repeat(2, 100px);
     gap: 8px 16px;
     place-content: center;
     margin-bottom: 24px;
@@ -31,5 +31,9 @@ button {
     border-radius: 5px;
 }
 #run {
+    margin-top: 10px;
+}
+
+#result-container {
     margin-top: 10px;
 }
