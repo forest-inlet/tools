@@ -13,30 +13,27 @@ $('#run').on('click', () => {
     let names = $('.person-checkbox:checked').map(function () {
         return this.id;
     }).get();
-    const input = $('#count').val().trim();
+    const input = $('#count').val().trim().replaceAll(/[０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    });
     if (input == '') {
         $('#error-message').text('人数を入力してください');
         return;
     }
-    const count = input.split('').map(value => {
-        value = value.replace(/[０-９]/g, function(s) {
-            return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-        });
+    const count_raw = input.split('').map(value => {
         if (!/^\d+$/.test(value)) {
             return NaN;
         }
-        const number = Number(value);
-        return Number.isSafeInteger(number) ? number : NaN;
+        return parseInt(value);
     });
-    if (count.some(n => !Number.isSafeInteger(n) || n <= 0)) {
-        $('#error-message').text('各グループの人数は1以上の整数を入力してください');
-        return;
-    }
-    if (count.reduce((acc, cur) => acc + cur, 0) != names.length) {
+    console.log(count_raw);
+    const count = count_raw.filter(e => !Number.isNaN(e) && e !== 0);
+    console.log(count);
+    if (count.reduce((acc, cur) => acc + cur, 0) !== names.length) {
         $('#error-message').text(`人数が合いません (選択中: ${names.length}人)`);
         return;
     }
-    shuffledNames = shuffle(names);
+    const shuffledNames = shuffle(names);
     const result = [];
     let cur = 0;
     for (let i = 0; i < count.length; i++) {
