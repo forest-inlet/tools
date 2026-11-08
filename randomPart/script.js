@@ -35,6 +35,11 @@ $('#run').on('click', () => {
         $('<div>').text(group.join('、')).appendTo('#result-container');
     });
     const text = result.map(group => group.join('、')).join('\n');
-    $('#line').attr('href', `https://line.me/R/msg/text/?${encodeURIComponent(text)}`);
+    const encoded = encodeURIComponent(text);
+    const isLineBrowser = /Line\//i.test(navigator.userAgent);
+    const href = isLineBrowser
+        ? `line://msg/text/${encoded}`
+        : `https://line.me/R/msg/text/?${encoded}`;
+    $('#line').attr('href', href);
     $('#line-container').show();
 });
