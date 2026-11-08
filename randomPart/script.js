@@ -34,6 +34,7 @@ $('#run').on('click', () => {
         $('<div>').text(group.join('、')).appendTo('#result-container');
     });
     const text = result.map(group => group.join("、")).join("\n");
-    $('#line').attr('href', `https://social-plugins.line.me/lineit/share?text=${text}`)
+    $('#line').attr('href', `https://social-plugins.line.me/lineit/share?text=${text}`);
+    LineIt.loadButton();
     $('#line-container').show();
 });
