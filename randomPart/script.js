@@ -1,4 +1,4 @@
-const shuffle = (array) => {    
+const shuffle = (array) => {
     const clone = Array.from(array);
     for (let i = clone.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -34,8 +34,7 @@ $('#run').on('click', () => {
     result.forEach(group => {
         $('<div>').text(group.join('、')).appendTo('#result-container');
     });
-    const text = result.map(group => group.join("、")).join("\n");
-    $('#line').attr('href', `https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(text)}`);
-    LineIt.loadButton();
+    const text = result.map(group => group.join('、')).join('\n');
+    $('#line').attr('href', `https://line.me/R/msg/text/?${encodeURIComponent(text)}`);
     $('#line-container').show();
 });
