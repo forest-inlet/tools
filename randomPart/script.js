@@ -36,6 +36,6 @@ $('#run').on('click', () => {
     });
     const text = result.map(group => group.join("、")).join("\n");
     $('#line').attr('href', `https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(text)}`);
-    // LineIt.loadButton();
+    LineIt.loadButton();
     $('#line-container').show();
 });
