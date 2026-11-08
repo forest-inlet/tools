@@ -62,7 +62,13 @@ button {
 }
 
 #line {
+    display: inline-block;
+    margin: 10px auto 20px;
+    padding: 8px 24px;
     background-color: #e9ffc7;
+    border: 1px solid black;
+    border-radius: 8px;
+    font-size: 16px;
 }
 
 @media (max-width: 360px) {

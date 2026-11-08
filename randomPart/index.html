@@ -7,18 +7,19 @@
     <title>ランダムパート</title>
     <link rel="stylesheet" href="./styles.css" />
     <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+    <script src="https://www.line-website.com/social-plugins/js/thirdparty/loader.min.js" async defer></script>
 </head>
 
 <body>
     <div id="people-select">
-        <label><input type="checkbox" id="かほ" class="person-checkbox" checked>かほ</label>
-        <label><input type="checkbox" id="かのん" class="person-checkbox" checked>かのん</label>
-        <label><input type="checkbox" id="いつき" class="person-checkbox" checked>いつき</label>
-        <label><input type="checkbox" id="たけひろ" class="person-checkbox" checked>たけひろ</label>
-        <label><input type="checkbox" id="けいた" class="person-checkbox" checked>けいた</label>
-        <label><input type="checkbox" id="あきと" class="person-checkbox" checked>あきと</label>
-        <label><input type="checkbox" id="ひなの" class="person-checkbox" checked>ひなの</label>
-        <label><input type="checkbox" id="さよ" class="person-checkbox" checked>さよ</label>
+        <label><input type="checkbox" class="person-checkbox" value="かほ" checked>かほ</label>
+        <label><input type="checkbox" class="person-checkbox" value="かのん" checked>かのん</label>
+        <label><input type="checkbox" class="person-checkbox" value="いつき" checked>いつき</label>
+        <label><input type="checkbox" class="person-checkbox" value="たけひろ" checked>たけひろ</label>
+        <label><input type="checkbox" class="person-checkbox" value="けいた" checked>けいた</label>
+        <label><input type="checkbox" class="person-checkbox" value="あきと" checked>あきと</label>
+        <label><input type="checkbox" class="person-checkbox" value="ひなの" checked>ひなの</label>
+        <label><input type="checkbox" class="person-checkbox" value="さよ" checked>さよ</label>
     </div>
     <input id="count" type="text" placeholder="人数を入力"><br>
     <button id="run">実行</button><br>
@@ -26,9 +27,7 @@
     <hr>
     <div id="result-container"></div>
     <div id="line-container" style="display: none;">
-        <a href="">
-            <button id="line">結果をLINEで送る</button>
-        </a>
+        <a id="line" href="#" target="_blank" rel="noopener">結果をLINEで送る</a>
     </div>
     <script src="./script.js"></script>
 </body>

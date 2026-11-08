@@ -10,8 +10,9 @@ const shuffle = (array) => {
 $('#run').on('click', () => {
     $('#error-message').text('');
     $('#result-container').empty();
+    $('#line-container').hide();
     const names = $('.person-checkbox:checked').map(function () {
-        return this.id;
+        return this.value;
     }).get();
     const input = $('#count').val().trim().replace(/[０-９]/g, value => String.fromCharCode(value.charCodeAt(0) - 0xFEE0));
     if (!input) {
@@ -34,7 +35,7 @@ $('#run').on('click', () => {
         $('<div>').text(group.join('、')).appendTo('#result-container');
     });
     const text = result.map(group => group.join("、")).join("\n");
-    $('#line').attr('href', `https://social-plugins.line.me/lineit/share?text=${text}`);
-    LineIt.loadButton();
+    $('#line').attr('href', `https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(text)}`);
+    // LineIt.loadButton();
     $('#line-container').show();
 });
